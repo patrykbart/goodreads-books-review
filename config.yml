@@ -1,0 +1,23 @@
+data:
+  tokenizer: ./assets/tokenizer.json
+  train_path: ./data/goodreads_train.csv
+  test_path: ./data/goodreads_test.csv
+  output_path: ./data/output.csv
+  batch_size: 100
+  num_workers: 10
+
+model:
+  max_length: 512
+  vocab_size: 32100
+  bidirectional: False
+  hidden_size: 512
+  embedding_size: 192
+  padding_idx: 0
+  num_layers: 1
+  output_size: 1
+  dropout: 0.1
+
+training:
+  epochs: 3
+  learning_rate: 0.01
+  weight_decay: 0.1
