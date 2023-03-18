@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
-from torchmetrics import MeanSquaredError
+from torchmetrics import MeanSquaredError, Accuracy
 
 from src.utils import visible_print
 
@@ -10,6 +10,8 @@ class ReviewModel(pl.LightningModule):
     def __init__(self, config):
         super().__init__()
         self.config = config
+
+        self.mode = config["model"]["mode"]
 
         self.num_directions = 2 if config["model"]["bidirectional"] else 1
         self.hidden_size = config["model"]["hidden_size"]
@@ -38,9 +40,14 @@ class ReviewModel(pl.LightningModule):
 
         self.relu = nn.LeakyReLU()
         self.dropout = nn.Dropout(p=config["model"]["dropout"])
+        self.softmax = nn.Softmax(dim=1)
 
-        self.loss = torch.nn.MSELoss()
-        self.metric = MeanSquaredError()
+        if self.mode == "regression":
+            self.loss = nn.MSELoss()
+            self.metric = MeanSquaredError()
+        elif self.mode == "classification":
+            self.loss = nn.CrossEntropyLoss()
+            self.metric = Accuracy(task="multiclass", num_classes=config["model"]["output_size"])
 
         self.test_results = []
 
@@ -67,16 +74,19 @@ class ReviewModel(pl.LightningModule):
 
         x = self.fc2(x)
 
-        return x.squeeze()
+        if self.mode == "regression":
+            return x.squeeze()
+        elif self.mode == "classification":
+            return self.softmax(x)
 
     def training_step(self, batch, batch_idx):
         x, y_true = batch
-        y_pred = self(x)
 
+        y_pred = self(x)
         loss = self.loss(y_pred, y_true)
 
         self.log("loss", loss)
-        self.log("mse", self.metric(y_pred, y_true), prog_bar=True)
+        self.log(self.metric.__class__.__name__, self.metric(y_pred, y_true), prog_bar=True)
 
         return loss
 
@@ -84,9 +94,13 @@ class ReviewModel(pl.LightningModule):
         x = batch
 
         y_pred = self(x)
-        y_pred = torch.round(y_pred).detach().tolist()
 
-        self.test_results.extend(y_pred)
+        if self.mode == "regression":
+            y_pred = torch.round(y_pred).detach().tolist()
+            self.test_results.extend(y_pred)
+        elif self.mode == "classification":
+            y_pred = torch.argmax(y_pred, dim=1).detach().tolist()
+            self.test_results.extend(y_pred)
 
     def on_train_start(self):
         visible_print("Training encoder")

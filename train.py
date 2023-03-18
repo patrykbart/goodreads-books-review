@@ -36,14 +36,16 @@ if __name__ == "__main__":
 
     trainer.test(model=model, dataloaders=test_loader)
 
-    visible_print("Done, saving results")
+    visible_print("Show results")
+    print(f"First 10 test outputs: {model.test_results[:10]}")
     print(f"Average test output: {sum(model.test_results) / len(model.test_results)}")
     print(f"Minimum test output: {min(model.test_results)}")
     print(f"Maximum test output: {max(model.test_results)}")
 
-    # Commit results to the dataset and save as CSV
-    df = pd.read_csv(config["data"]["test_path"])
-    review_id = df["review_id"].tolist()
+    if not config["data"]["subsample"]:
+        visible_print("Save as CSV")
+        df = pd.read_csv(config["data"]["test_path"])
+        review_id = df["review_id"].tolist()
 
-    df = pd.DataFrame({"review_id": review_id, "rating": model.test_results})
-    df.to_csv(config["data"]["output_path"], index=False)
+        df = pd.DataFrame({"review_id": review_id, "rating": model.test_results})
+        df.to_csv(config["data"]["output_path"], index=False)

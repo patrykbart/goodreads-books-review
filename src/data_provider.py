@@ -22,12 +22,24 @@ class GoodreadsDataset:
         # Load data
         df = pd.read_csv(path)
 
+        # Subsample if needed
+        if config["data"]["subsample"]:
+            df = df.sample(n=10)
+
         # Process data
         self.df = self.process_data_partition(df)
 
+        # Set output dtype
+        if config["model"]["mode"] == "regression":
+            dtype = torch.float
+        elif config["model"]["mode"] == "classification":
+            dtype = torch.long
+        else:
+            raise ValueError(f"Invalid mode: {config['model']['mode']}")
+
         # Create tensors (y should be float)
         self.x = torch.tensor(self.df["review_text"].tolist())
-        self.y = torch.tensor(self.df["rating"].tolist(), dtype=torch.float) if "rating" in self.df.columns else None
+        self.y = torch.tensor(self.df["rating"].tolist(), dtype=dtype) if "rating" in self.df.columns else None
 
     def process_data_partition(self, df):
         # Drop columns that are not needed
