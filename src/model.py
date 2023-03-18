@@ -35,7 +35,7 @@ class ReviewModel(pl.LightningModule):
         )
         self.fc2 = nn.Linear(
             in_features=config["model"]["hidden_size"],
-            out_features=config["model"]["output_size"],
+            out_features=1 if self.mode == "regression" else config["model"]["output_size"],
         )
 
         self.relu = nn.LeakyReLU()
@@ -85,7 +85,7 @@ class ReviewModel(pl.LightningModule):
         y_pred = self(x)
         loss = self.loss(y_pred, y_true)
 
-        self.log("loss", loss)
+        self.log("loss", loss, prog_bar=True)
         self.log(self.metric.__class__.__name__, self.metric(y_pred, y_true), prog_bar=True)
 
         return loss
