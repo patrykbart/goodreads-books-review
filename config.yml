@@ -1,6 +1,7 @@
 data:
   tokenizer: ./assets/tokenizer.json
-  train_path: ./data/goodreads_train.csv
+  train_path: ./data/goodreads_train_split.csv
+  valid_path: ./data/goodreads_valid_split.csv
   test_path: ./data/goodreads_test.csv
   output_path: ./data/output.csv
   batch_size: 100
@@ -21,5 +22,9 @@ model:
 
 training:
   epochs: 2
+  validate: True
+  val_check_interval: 0.5
   learning_rate: 0.001
   weight_decay: 0.1
+  early_stopping: True
+  patience: 0 # works only if early_stopping is True

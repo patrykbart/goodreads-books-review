@@ -86,9 +86,18 @@ class ReviewModel(pl.LightningModule):
         loss = self.loss(y_pred, y_true)
 
         self.log("loss", loss, prog_bar=True)
-        self.log(self.metric.__class__.__name__, self.metric(y_pred, y_true), prog_bar=True)
+        self.log("train_" + self.metric.__class__.__name__, self.metric(y_pred, y_true), prog_bar=True)
 
         return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y_true = batch
+
+        y_pred = self(x)
+        loss = self.loss(y_pred, y_true)
+
+        self.log("val_loss", loss, prog_bar=True)
+        self.log("val_" + self.metric.__class__.__name__, self.metric(y_pred, y_true), prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         x = batch
