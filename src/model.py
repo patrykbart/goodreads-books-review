@@ -85,7 +85,7 @@ class ReviewModel(pl.LightningModule):
         y_pred = self(x)
         loss = self.loss(y_pred, y_true)
 
-        self.log("loss", loss, prog_bar=True)
+        self.log("train_loss", loss, prog_bar=True)
         self.log("train_" + self.metric.__class__.__name__, self.metric(y_pred, y_true), prog_bar=True)
 
         return loss

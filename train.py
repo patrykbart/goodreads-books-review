@@ -22,7 +22,7 @@ if __name__ == "__main__":
         torch.utils.data.DataLoader(
             valid_dataset,
             batch_size=config["data"]["batch_size"],
-            shuffle=True,
+            shuffle=False,
             num_workers=config["data"]["num_workers"],
         )
         if valid_dataset is not None
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     visible_print("Trainer setup")
     callbacks = []
     if config["training"]["early_stopping"]:
-        callback.append(
+        callbacks.append(
             pl.callbacks.EarlyStopping(
                 monitor="val_loss" if config["training"]["validate"] else "loss",
                 patience=config["training"]["patience"],

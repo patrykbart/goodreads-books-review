@@ -24,7 +24,7 @@ class GoodreadsDataset:
 
         # Subsample if needed
         if config["data"]["subsample"]:
-            df = df.sample(n=10)
+            df = df.sample(n=min(100, len(df)))
 
         # Process data
         self.df = self.process_data_partition(df)
